@@ -31,7 +31,7 @@ class LocalizedLanguageSelectTest < Test::Unit::TestCase
               Regexp.new(Regexp.escape('<select id="user_language" name="user[language]">')),
               "Should have proper name for object"
   end
-
+  
   def test_should_return_select_tag_with_proper_name
     assert localized_language_select_tag( "competition_submission[data][language]", nil) =~
               Regexp.new(
@@ -56,6 +56,13 @@ class LocalizedLanguageSelectTest < Test::Unit::TestCase
   def test_should_return_priority_languages_first
     assert localized_language_options_for_select(nil, [:es, :fr]) =~ Regexp.new(
       Regexp.escape("<option value=\"es\">Spanish</option>\n<option value=\"fr\">French</option><option value=\"\" disabled=\"disabled\">-------------</option>\n<option value=\"ab\">Abkhazian</option>\n"))
+  end
+  
+  def test_should_intersect_all_languages_with_the_list_of_languages_to_use
+    I18n.locale = 'en'
+    assert localized_language_options_for_select(nil, nil, [:en, :de]) =~ Regexp.new(
+      Regexp.escape("<option value=\"en\">English</option>\n<option value=\"de\">German</option>")
+    )
   end
 
   def test_i18n_should_know_about_languages
