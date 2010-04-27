@@ -55,22 +55,26 @@ module ActionView
       # Use +selected_value+ for setting initial value
       # It behaves likes older object-binded brother +localized_language_select+ otherwise
       # TODO : Implement pseudo-named args with a hash, not the "somebody said PHP?" multiple args sillines
-      def localized_language_select_tag(name, selected_value = nil, priority_languages = nil, only = nil, html_options = {})
+      def localized_language_select_tag(name, selected_value = nil, options = {}, html_options = {})
         content_tag :select,
-                    localized_language_options_for_select(selected_value, priority_languages, only),
+                    localized_language_options_for_select(selected_value, options),
                     { "name" => name, "id" => name }.update(html_options.stringify_keys)
       end
 
       # Returns a string of option tags for languages according to locale. Supply the language code in lower-case ('en', 'de') 
       # as +selected+ to have it marked as the selected option tag.
       # Language codes listed as an array of symbols in +priority_languages+ argument will be listed first
-      def localized_language_options_for_select(selected = nil, priority_languages = nil, only = nil)
+      def localized_language_options_for_select(selected = nil, options = {})
         language_options = ""
-        if priority_languages
-          language_options += options_for_select(LocalizedLanguageSelect::priority_languages_array(priority_languages), selected)
+        if options[:priority]
+          language_options += options_for_select(LocalizedLanguageSelect::priority_languages_array(options.delete(:priority)), selected)
           language_options += "<option value=\"\" disabled=\"disabled\">-------------</option>\n"
         end
-        return language_options + options_for_select(LocalizedLanguageSelect::localized_languages_array(only), selected)
+        languages = LocalizedLanguageSelect::localized_languages_array(options.delete(:only))
+        if options[:include_blank]
+          languages.unshift(options.delete(:include_blank))
+        end
+        return language_options + options_for_select(languages, selected)
       end
       
     end
@@ -82,7 +86,7 @@ module ActionView
         value = value(object)
         content_tag("select",
           add_options(
-            localized_language_options_for_select(value, priority_languages),
+            localized_language_options_for_select(value, :priority => priority_languages),
             options, value
           ), html_options
         )
